@@ -1,0 +1,473 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale>
+
+
+struct Especializacao {
+    int codigo;
+    char nome[100];
+};
+
+struct Paciente {
+    int cod_paciente;
+    char CPF[12];
+    char nome[100];
+    char idade[5];
+    char sexo;
+    char telefone[15];
+    char endereco[200];
+    char cidade[100];
+    char UF[3];
+};
+
+struct Medico {
+    char CRM[15];
+    char nome[100];
+    char idade[5];
+    char sexo;
+    char telefone[15];
+    int codigo_especializacao;
+    float valor_consulta;
+    int ativo;
+};
+
+struct ConsultaMarcada {
+    char CPF_paciente[12];
+    char CRM_medico[15];
+    char data[11];
+    char horario[6];
+};
+
+struct Indices {
+    int codigo;
+    int endereco;
+};
+
+
+void lerPaciente(struct Paciente *paciente, struct Indices indicesPacientes[], int *numPacientes){
+	   printf("Informe o código do paciente: ");
+    scanf("%d", &paciente->cod_paciente);
+
+    printf("Informe o CPF do paciente: ");
+    scanf("%s", paciente->CPF);
+
+    printf("Informe o nome do paciente: ");
+    scanf("%s", paciente->nome);
+
+    printf("Informe a idade do paciente: ");
+    scanf("%s", paciente->idade);
+
+    printf("Informe o sexo do paciente (M/F): ");
+    scanf(" %c", &paciente->sexo);
+
+    printf("Informe o telefone do paciente: ");
+    scanf("%s", paciente->telefone);
+
+    printf("Informe o endereço do paciente: ");
+    scanf("%s", paciente->endereco);
+
+    printf("Informe a cidade do paciente: ");
+    scanf("%s", paciente->cidade);
+
+    printf("Informe o UF do paciente: ");
+    scanf("%s", paciente->UF);
+
+    // Abre o arquivo de pacientes para escrita no final (modo "ab+")
+    FILE *arquivoPacientes = fopen("pacientes.dat", "ab+");
+    if (arquivoPacientes == NULL) {
+        printf("Erro ao abrir o arquivo de pacientes.\n");
+        exit(1);
+    }
+
+    // Escreve o paciente no final do arquivo
+    fwrite(paciente, sizeof(struct Paciente), 1, arquivoPacientes);
+
+    // Fecha o arquivo de pacientes
+    fclose(arquivoPacientes);
+
+    // Indexação do paciente
+    int z;
+    for (z = *numPacientes - 1; z >= 0 && indicesPacientes[z].codigo > paciente->cod_paciente; z--) {
+        indicesPacientes[z + 1] = indicesPacientes[z];
+    }
+    indicesPacientes[z + 1].codigo = paciente->cod_paciente;
+    indicesPacientes[z + 1].endereco = *numPacientes;
+    (*numPacientes)++;
+};
+// Função para ler e indexar uma especialização
+void lerEspecializacao(struct Especializacao *especializacao, struct Indices indicesEspecializacoes[], int *numEspecializacoes) {
+    // Leitura dos dados da especialização
+    printf("Informe o código da especialização: ");
+    scanf("%d", &especializacao->codigo);
+
+    printf("Informe o nome da especialização: ");
+    scanf("%s", especializacao->nome);
+
+    // Abre o arquivo de especializações para escrita no final (modo "ab+")
+    FILE *arquivoEspecializacoes = fopen("especializacoes.dat", "ab+");
+    if (arquivoEspecializacoes == NULL) {
+        printf("Erro ao abrir o arquivo de especializações.\n");
+        exit(1);
+    }
+
+    // Escreve a especialização no final do arquivo
+    fwrite(especializacao, sizeof(struct Especializacao), 1, arquivoEspecializacoes);
+
+    // Fecha o arquivo de especializações
+    fclose(arquivoEspecializacoes);
+
+    // Indexação da especialização
+    int z;
+    for (z = *numEspecializacoes - 1; z >= 0 && indicesEspecializacoes[z].codigo > especializacao->codigo; z--) {
+        indicesEspecializacoes[z + 1] = indicesEspecializacoes[z];
+    }
+    indicesEspecializacoes[z + 1].codigo = especializacao->codigo;
+    indicesEspecializacoes[z + 1].endereco = *numEspecializacoes;
+    (*numEspecializacoes)++;
+}
+
+// Função para ler e indexar um médico
+void lerMedico(struct Medico *medico, struct Especializacao especializacoes[], int numEspecializacoes, struct Indices indicesMedicos[], int *numMedicos) {
+    // Leitura dos dados do médico
+    printf("Informe o CRM do médico: ");
+    scanf("%s", medico->CRM);
+
+    printf("Informe o nome do médico: ");
+    scanf("%s", medico->nome);
+
+    printf("Informe a idade do médico: ");
+    scanf("%s", medico->idade);
+
+    printf("Informe o sexo do médico (M/F): ");
+    scanf(" %c", &medico->sexo);
+
+    printf("Informe o telefone do médico: ");
+    scanf("%s", medico->telefone);
+
+    printf("Informe o código da especialização do médico: ");
+    scanf("%d", &medico->codigo_especializacao);
+
+    printf("Informe o valor da consulta do médico: ");
+    scanf("%f", &medico->valor_consulta);
+
+    // Abre o arquivo de médicos para escrita no final (modo "ab+")
+    FILE *arquivoMedicos = fopen("medicos.dat", "ab+");
+    if (arquivoMedicos == NULL) {
+        printf("Erro ao abrir o arquivo de médicos.\n");
+        exit(1);
+    }
+
+    // Escreve o médico no final do arquivo
+    fwrite(medico, sizeof(struct Medico), 1, arquivoMedicos);
+
+    // Fecha o arquivo de médicos
+    fclose(arquivoMedicos);
+
+    // Indexação do médico
+    int z;
+    for (z = *numMedicos - 1; z >= 0 && indicesMedicos[z].codigo > medico->codigo_especializacao; z--) {
+        indicesMedicos[z + 1] = indicesMedicos[z];
+    }
+    indicesMedicos[z + 1].codigo = medico->codigo_especializacao;
+    indicesMedicos[z + 1].endereco = *numMedicos;
+    (*numMedicos)++;
+}
+
+// Função para ler e indexar uma consulta marcada
+void lerConsultaMarcada(struct ConsultaMarcada *consulta, char *CPF, char *CRM) {
+    // Leitura dos dados da consulta marcada
+    printf("Informe o CPF do paciente: ");
+    scanf("%s", consulta->CPF_paciente);
+
+    printf("Informe o CRM do médico: ");
+    scanf("%s", consulta->CRM_medico);
+
+    printf("Informe a data da consulta (DD/MM/AAAA): ");
+    scanf("%s", consulta->data);
+
+    printf("Informe o horário da consulta (HH:MM): ");
+    scanf("%s", consulta->horario);
+
+    // Abre o arquivo de consultas marcadas para escrita no final (modo "ab+")
+    FILE *arquivoConsultas = fopen("consultas.dat", "ab+");
+    if (arquivoConsultas == NULL) {
+        printf("Erro ao abrir o arquivo de consultas marcadas.\n");
+        exit(1);
+    }
+
+    // Escreve a consulta marcada no final do arquivo
+    fwrite(consulta, sizeof(struct ConsultaMarcada), 1, arquivoConsultas);
+
+    // Fecha o arquivo de consultas marcadas
+    fclose(arquivoConsultas);
+}
+
+void buscarMedicosPorEspecializacao(struct Medico medicos[], struct Especializacao especializacoes[], int numMedicos, int numEspecializacoes) {
+    // Perguntar ao usuário o código da especialização desejada
+    int codigoEspecializacao;
+    printf("Informe o código da especialização desejada: ");
+    scanf("%d", &codigoEspecializacao);
+
+    // Executar busca binária
+    int esq = 0, dir = numMedicos - 1;
+    while (esq <= dir) {
+        int meio = (esq + dir) / 2;
+        if (medicos[meio].codigo_especializacao == codigoEspecializacao && medicos[meio].ativo == 1) {
+            // Médico encontrado
+            printf("CRM: %s\n", medicos[meio].CRM);
+            printf("Nome: %s\n", medicos[meio].nome);
+            printf("Telefone: %s\n", medicos[meio].telefone);
+            printf("Valor da Consulta: %.2f\n", medicos[meio].valor_consulta);
+            printf("--------------\n");
+            return;
+        } else if (medicos[meio].codigo_especializacao < codigoEspecializacao) {
+            esq = meio + 1;
+        } else {
+            dir = meio - 1;
+        }
+    }
+
+    // Caso não encontre nenhum médico com a especialização desejada
+    printf("Nenhum médico com a especialização selecionada foi encontrado.\n");
+}
+void agendarConsulta(struct ConsultaMarcada *consultas, int *numConsultas, struct Paciente pacientes[], int numPacientes, struct Medico medicos[], int numMedicos) {
+    // Verificar se há pacientes e médicos cadastrados
+    if (numPacientes == 0 || numMedicos == 0) {
+        printf("É necessário cadastrar pacientes e médicos antes de agendar uma consulta.\n");
+        return;
+    }
+
+    // Perguntar ao usuário o CPF do paciente e o CRM do médico
+    char CPF[12];
+    char CRM[15];
+    printf("Informe o CPF do paciente: ");
+    scanf("%s", CPF);
+    printf("Informe o CRM do médico: ");
+    scanf("%s", CRM);
+
+    // Executar busca binária para encontrar o paciente
+    int esqPaciente = 0, dirPaciente = numPacientes - 1;
+    int pacienteEncontrado = 0;
+    int pacienteIndice;
+
+    while (esqPaciente <= dirPaciente) {
+        int meioPaciente = (esqPaciente + dirPaciente) / 2;
+        if (strcmp(pacientes[meioPaciente].CPF, CPF) == 0) {
+            pacienteEncontrado = 1;
+            pacienteIndice = meioPaciente;
+            break;
+        } else if (strcmp(pacientes[meioPaciente].CPF, CPF) < 0) {
+            esqPaciente = meioPaciente + 1;
+        } else {
+            dirPaciente = meioPaciente - 1;
+        }
+    }
+
+    if (!pacienteEncontrado) {
+        printf("Paciente não encontrado.\n");
+        return;
+    }
+
+    // Executar busca binária para encontrar o médico
+    int esqMedico = 0, dirMedico = numMedicos - 1;
+    int medicoEncontrado = 0;
+    int medicoIndice;
+
+    while (esqMedico <= dirMedico) {
+        int meioMedico = (esqMedico + dirMedico) / 2;
+        if (strcmp(medicos[meioMedico].CRM, CRM) == 0 && medicos[meioMedico].ativo == 1) {
+            medicoEncontrado = 1;
+            medicoIndice = meioMedico;
+            break;
+        } else if (strcmp(medicos[meioMedico].CRM, CRM) < 0) {
+            esqMedico = meioMedico + 1;
+        } else {
+            dirMedico = meioMedico - 1;
+        }
+    }
+
+    if (!medicoEncontrado) {
+        printf("Médico não encontrado ou não está ativo.\n");
+        return;
+    }
+
+    // Perguntar a data e o horário da consulta
+    char data[11];
+    char horario[6];
+    printf("Informe a data da consulta (DD/MM/AAAA): ");
+    scanf("%s", data);
+    printf("Informe o horário da consulta (HH:MM): ");
+    scanf("%s", horario);
+
+    // Registrar a consulta no array de consultas
+    strcpy(consultas[*numConsultas].CPF_paciente, CPF);
+    strcpy(consultas[*numConsultas].CRM_medico, CRM);
+    strcpy(consultas[*numConsultas].data, data);
+    strcpy(consultas[*numConsultas].horario, horario);
+    (*numConsultas)++;
+
+    printf("Consulta agendada com sucesso.\n");
+}
+void desativarMedico(struct Medico medicos[], int numMedicos) {
+    // Perguntar ao usuário o CRM do médico a ser desativado
+    char CRM[15];
+    printf("Informe o CRM do médico a ser desativado: ");
+    scanf("%s", CRM);
+
+    // Executar busca binária para encontrar o médico
+    int esqMedico = 0, dirMedico = numMedicos - 1;
+    int medicoEncontrado = 0;
+    int medicoIndice;
+
+    while (esqMedico <= dirMedico) {
+        int meioMedico = (esqMedico + dirMedico) / 2;
+        if (strcmp(medicos[meioMedico].CRM, CRM) == 0) {
+            medicoEncontrado = 1;
+            medicoIndice = meioMedico;
+            break;
+        } else if (strcmp(medicos[meioMedico].CRM, CRM) < 0) {
+            esqMedico = meioMedico + 1;
+        } else {
+            dirMedico = meioMedico - 1;
+        }
+    }
+
+    if (!medicoEncontrado) {
+        printf("Médico não encontrado.\n");
+        return;
+    }
+
+    // Desativar o médico
+    medicos[medicoIndice].ativo = 0;
+    printf("Médico desativado com sucesso.\n");
+}
+void reorganizarMedicos(struct Medico medicos[], int numMedicos) {
+    // Reorganizar o array de médicos
+    int novoIndice = 0;
+    for (int i = 0; i < numMedicos; i++) {
+        if (medicos[i].ativo == 1) {
+            // Copiar médicos ativos para um novo índice
+            medicos[novoIndice] = medicos[i];
+            novoIndice++;
+        }
+    }
+    printf("Tabela de médicos reorganizada com sucesso.\n");
+}
+// Função para calcular o faturamento
+float calcularFaturamento(struct Medico medicos[], int numMedicos) {
+    float faturamento = 0.0;
+    for (int i = 0; i < numMedicos; i++) {
+        if (medicos[i].ativo == 1) {
+            faturamento += medicos[i].valor_consulta;
+        }
+    }
+    return faturamento;
+}
+void valoresConsultaAltoBaixo(struct Medico medicos[], int numMedicos) {
+    // Verificar se há médicos cadastrados
+    if (numMedicos == 0) {
+        printf("Não há médicos cadastrados.\n");
+        return;
+    }
+
+    // Ordenar o array de médicos por valor de consulta (usando bubble sort)
+    for (int i = 0; i < numMedicos - 1; i++) {
+        for (int j = 0; j < numMedicos - i - 1; j++) {
+            if (medicos[j].ativo == 1 && medicos[j + 1].ativo == 1 && medicos[j].valor_consulta > medicos[j + 1].valor_consulta) {
+                struct Medico temp = medicos[j];
+                medicos[j] = medicos[j + 1];
+                medicos[j + 1] = temp;
+            }
+        }
+    }
+
+    // Encontrar o valor de consulta mais alto (o último da lista após ordenação)
+    float valorMaisAlto = medicos[numMedicos - 1].valor_consulta;
+
+    // Encontrar o valor de consulta mais baixo (o primeiro da lista após ordenação)
+    float valorMaisBaixo = medicos[0].valor_consulta;
+
+    printf("Valor de consulta mais alto: R$%.2f\n", valorMaisAlto);
+    printf("Valor de consulta mais baixo: R$%.2f\n", valorMaisBaixo);
+}
+
+int main() {
+	setlocale(LC_ALL, "Portuguese");
+    // Declaração de estruturas e índices
+    struct Especializacao especializacoes[100];
+    int numEspecializacoes = 0;
+
+    struct Paciente pacientes[100];
+    struct Indices indicesPacientes[100];
+    int numPacientes = 0;
+
+    struct Medico medicos[100];
+    struct Indices indicesMedicos[100];
+    int numMedicos = 0;
+
+    struct ConsultaMarcada consultas[100];
+    int numConsultas = 0;
+
+    int opcao;
+
+    while (1) {
+        printf("\nMenu Principal:\n");
+        printf("1. Cadastrar Paciente\n");
+        printf("2. Cadastrar Médico\n");
+        printf("3. Buscar Médicos por Especialização\n");
+        printf("4. Agendar Consulta\n");
+        printf("5. Desativar Médico\n");
+        printf("6. Reorganizar Tabela de Médicos\n");
+        printf("7. Calcular Faturamento\n");
+        printf("8. Valores de Consulta Mais Alto e Mais Baixo\n");
+        printf("9. Sair\n");
+
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                lerPaciente(&pacientes[numPacientes], indicesPacientes, &numPacientes);
+                break;
+
+            case 2:
+                lerMedico(&medicos[numMedicos], especializacoes, numEspecializacoes, indicesMedicos, &numMedicos);
+                break;
+
+            case 3:
+                buscarMedicosPorEspecializacao(medicos, especializacoes, numMedicos, numEspecializacoes);
+                break;
+
+            case 4:
+                agendarConsulta(consultas, &numConsultas, pacientes, numPacientes, medicos, numMedicos);
+                break;
+
+            case 5:
+                desativarMedico(medicos, numMedicos);
+                break;
+
+            case 6:
+                reorganizarMedicos(medicos, numMedicos);
+                break;
+
+            case 7:
+                printf("Faturamento: R$%.2f\n", calcularFaturamento(medicos, numMedicos));
+                break;
+
+            case 8:
+                valoresConsultaAltoBaixo(medicos, numMedicos);
+                break;
+
+            case 9:
+                exit(0);
+                break;
+
+            default:
+                printf("Opção inválida!\n");
+        }
+    }
+
+    return 0;
+
+}
